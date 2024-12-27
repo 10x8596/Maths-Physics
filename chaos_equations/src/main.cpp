@@ -1,7 +1,10 @@
-#include <SDL2/SDL.h>
+#include <SFML/Graphics.hpp>
 #include <cmath>
 #include <vector>
 #include <iostream>
+
+// Compile: g++ -IC:\SFML-3.0.0\include -c src/main.cpp -o chaos_equations.o
+// Link program: g++ -IC:\SFML-3.0.0\lib .\chaos_equations.o -o chaos_equations.exe -lmingw32 -lsfml-graphics -lsfml-window -lsfml-system -lsfml-main -mwindows
 
 // Chaos equations
 void computeNextState(float& x, float& y, float t, float dt) {
@@ -13,45 +16,6 @@ void computeNextState(float& x, float& y, float t, float dt) {
 }
 
 int main () {
-
-    // SFML setup
-    sf::RenderWindow window(sf::VideoMode(800, 800), "Chaos Equations");
-    window.setFramerateLimit(60);
-
-    // Initial conditions
-    float x = 0.1f, y = 0.1f, t = 0.0f, dt = 0.01f;
-    std::vector<sf::Vector2f> points;
-
-    // Simulation loop
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-
-        // Compute next state
-        computeNextState(x, y, t, dt);
-        t += dt;
-
-        // Transform coordinates for screen display
-        float screenX = 400 + x * 100;
-        float screenY = 400 - y * 100;
-        points.emplace_back(screenX, screenY);
-
-        // Render
-        window.clear(sf::Color::Black);
-
-        // Draw all points
-        for (const auto& point : points) {
-            sf::CircleShape shape(1);
-            shape.setPosition(point.x, point.y);
-            shape.setFillColor(sf::Color::White);
-            window.draw(shape);
-        }
-
-        window.display();
-    }
 
     return 0;
 }
