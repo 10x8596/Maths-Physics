@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/razeen/3D_Grapher/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/razeen/3D_Grapher/build/3d_grapher_autogen/include -I/usr/lib/cmake/Qt5 -I/usr/lib/qt -isystem /usr/include/qt -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++ -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -g -std=gnu++17 -fPIC -o CMakeFiles/3d_grapher.dir/3d_grapher_autogen/mocs_compilation.cpp.o -c /home/razeen/3D_Grapher/build/3d_grapher_autogen/mocs_compilation.cpp",
+  "file": "/home/razeen/3D_Grapher/build/3d_grapher_autogen/mocs_compilation.cpp",
+  "output": "CMakeFiles/3d_grapher.dir/3d_grapher_autogen/mocs_compilation.cpp.o"
+},
+{
+  "directory": "/home/razeen/3D_Grapher/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/razeen/3D_Grapher/build/3d_grapher_autogen/include -I/usr/lib/cmake/Qt5 -I/usr/lib/qt -isystem /usr/include/qt -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++ -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -g -std=gnu++17 -fPIC -o CMakeFiles/3d_grapher.dir/src/main.cpp.o -c /home/razeen/3D_Grapher/src/main.cpp",
+  "file": "/home/razeen/3D_Grapher/src/main.cpp",
+  "output": "CMakeFiles/3d_grapher.dir/src/main.cpp.o"
+}
+]

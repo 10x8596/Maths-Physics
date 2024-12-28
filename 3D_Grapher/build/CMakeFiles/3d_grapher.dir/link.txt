@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file,CMakeFiles/3d_grapher.dir/link.d CMakeFiles/3d_grapher.dir/3d_grapher_autogen/mocs_compilation.cpp.o CMakeFiles/3d_grapher.dir/src/main.cpp.o -o 3d_grapher  /usr/lib/libglfw.so.3.4 /usr/lib/libGLEW.so /usr/lib/libQt5Widgets.so.5.15.15 /usr/lib/libGLX.so /usr/lib/libOpenGL.so /usr/lib/libQt5Gui.so.5.15.15 /usr/lib/libQt5Core.so.5.15.15

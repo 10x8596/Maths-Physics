@@ -1,0 +1,4 @@
+/home/razeen/3D_Grapher/build/CMakeFiles/3d_grapher.dir
+/home/razeen/3D_Grapher/build/CMakeFiles/edit_cache.dir
+/home/razeen/3D_Grapher/build/CMakeFiles/rebuild_cache.dir
+/home/razeen/3D_Grapher/build/CMakeFiles/3d_grapher_autogen.dir
