@@ -40,7 +40,7 @@ struct Point {
 int main() {
     const int windowWidth = 1200;
     const int windowHeight = 1200;
-    const int trailLength = 50; // Length of the trail
+    const int trailLength = 200; // Length of the trail ***************************
     const float scale = 200.0f; // Scaling factor
 
     // SFML window setup
@@ -50,7 +50,7 @@ int main() {
     // Time-related variables
     sf::Clock clock;
     float t = 0.0f; // Initial time
-    float speed = 0.001f; // Speed of animation
+    float speed = 0.00005f; // Speed of animation *************************************
 
     // Random seed
     srand(static_cast<unsigned>(time(0)));
@@ -76,7 +76,7 @@ int main() {
         }
 
         // Gradually spawn more points
-        if (points.size() < 500 && t > points.size() / 10.0f) {
+        if (points.size() < 5000 && t > points.size() / 10.0f) {
             for (int i = 0; i < pointsToSpawn; ++i) {
                 Point newPoint;
                 newPoint.position = sf::Vector2f(randomFloat(0, windowWidth), randomFloat(0, windowHeight));
@@ -84,7 +84,7 @@ int main() {
                 newPoint.velocity = sf::Vector2f(randomFloat(-1, 1), randomFloat(-1, 1));
                 points.push_back(newPoint);
             }
-            pointsToSpawn += 2; // Increase spawn rate
+            pointsToSpawn += 1; // Increase spawn rate
         }
 
         // Update point positions using dynamic equations
@@ -122,7 +122,7 @@ int main() {
             // Draw main point
             sf::CircleShape circle(2.0f);
             circle.setPosition(point.position);
-            circle.setFillColor(point.color);
+            circle.setFillColor(sf::Color::Black);
             window.draw(circle);
         }
 
