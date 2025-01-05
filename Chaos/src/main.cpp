@@ -9,18 +9,20 @@
 /* Link program: g++ main.o -o main -LC:\SFML-3.0.0\lib -lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lopengl32 -lfreetype -lwinmm -lgdi32 -mwindows */
 // execute: ./main.exe
 
-/* These are plots of random recursive equations, which often produce chaos,
-and results in beautiful patterns. For every time t, a point (x,y) 
-is initialized to (t,t). The equation is applied to the point many times, 
-and each iteration is drawn in a unique color.*/ 
-
-// Random Equation Generator
-/* Generate coefficients a,b,c,d for equations of the form:
-    x_(n+1) = a * sin(b * y_n) + c * cos(d * x_n)
-    y_(n+1) = c * sin(a * x_n) + d * cos(b * y_n)
-*/
-
-// Iteratively plot the points, starting with (x_0, y_0) = (t,t)
+/* 
+These are plots of random recursive equations, which often produce chaos,
+and results in beautiful patterns. The equations are dynamic systems so they change over time.
+For every time t, a point (x,y) is initialized to (t,t). It starts at a low value and slowly 
+increases as the animation progresses. at every time step, we start with a point whose 
+coordinates are initialised to t (x=t, y=t). Then we apply an equation to update the point 
+such as x' = yt + x - t and y' = x^2 - y^2 - t^2. These equations can be random. 
+Once we have the point we draw it to the screen with a unique color and repeat. 
+These points will also have a trail. Essentially once we have an equation. 
+Let's say x' = yt + x - t and y' = x^2 - y^2 - t^2, we draw the first point in green, 
+then apply the same equation again to update the point and draw it in blue and we repeat 
+this process. As time changes, those points changes as well. We'll also dynamically change 
+the speed so it speeds up when nothing interesting is happening.
+*/ 
 
 // Generate a random floating-point number in a range
 float randomFloat(float min, float max) {
@@ -127,18 +129,5 @@ int main() {
         window.display();
     }
 
-    // return 0;
+    return 0;
 }
-
-/* Let me tell you a bit about the equations. They are dynamic systems so they change over time.
-    time is represented by the variable t. it starts at a low value and slowly increases
-    as the animation progresses. at every time step, we start with a point whose coordinates
-    are initialised to t (x=t, y=t). Then we apply an equation to update the point such as 
-    x' = yt + x - t and y' = x^2 - y^2 - t^2. These equations can be random. Once we have the point
-    we draw it to the screen with a unique color and repeat. These points will also have a trail.
-    Essentially once we have an equation. let's say x' = yt + x - t and y' = x^2 - y^2 - t^2,
-    we draw the first point in green, then apply the same equation again to update the point
-    and draw it in blue and we repeat this process. As time changes, those points changes as well.
-    we'll also dynamically change the speed so it speeds up when nothing interesting is happening.
-
-*/
