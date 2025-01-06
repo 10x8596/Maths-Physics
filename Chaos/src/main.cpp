@@ -6,23 +6,28 @@
 
 
 // Compile: g++ -c src/main.cpp -IC:\SFML-3.0.0\include -DSFML_STATIC (make all)
-/* Link program: g++ main.o -o main -LC:\SFML-3.0.0\lib -lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lopengl32 -lfreetype -lwinmm -lgdi32 -mwindows */
+/*
+Link program: g++ main.o -o main -LC:\SFML-3.0.0\lib -lsfml-graphics-s
+-lsfml-window-s -lsfml-system-s -lopengl32 -lfreetype -lwinmm -lgdi32 -mwindows
+*/
 // execute: ./main.exe
 
-/* 
+/*
 These are plots of random recursive equations, which often produce chaos,
-and results in beautiful patterns. The equations are dynamic systems so they change over time.
-For every time t, a point (x,y) is initialized to (t,t). It starts at a low value and slowly 
-increases as the animation progresses. at every time step, we start with a point whose 
-coordinates are initialised to t (x=t, y=t). Then we apply an equation to update the point 
-such as x' = yt + x - t and y' = x^2 - y^2 - t^2. These equations can be random. 
-Once we have the point we draw it to the screen with a unique color and repeat. 
-These points will also have a trail. Essentially once we have an equation. 
-Let's say x' = yt + x - t and y' = x^2 - y^2 - t^2, we draw the first point in green, 
-then apply the same equation again to update the point and draw it in blue and we repeat 
-this process. As time changes, those points changes as well. We'll also dynamically change 
-the speed so it speeds up when nothing interesting is happening.
-*/ 
+and results in beautiful patterns. The equations are dynamic systems so they
+change over time. For every time t, a point (x,y) is initialized to (t,t). It
+starts at a low value and slowly
+increases as the animation progresses. at every time step, we start with a point
+whose coordinates are initialised to t (x=t, y=t). Then we apply an equation to
+update the point such as x' = yt + x - t and y' = x^2 - y^2 - t^2. These
+equations can be random. Once we have the point we draw it to the screen with a
+unique color and repeat. These points will also have a trail. Essentially once
+we have an equation. Let's say x' = yt + x - t and y' = x^2 - y^2 - t^2, we draw
+the first point in green, then apply the same equation again to update the point
+and draw it in blue and we repeat this process. As time changes, those points
+changes as well. We'll also dynamically change the speed so it speeds up
+when nothing interesting is happening.
+*/
 
 /*
 TODO: draw the current equation on screen
@@ -31,7 +36,8 @@ TODO: implement a key press feature to generate the next random eq
 
 // Generate a random floating-point number in a range
 float randomFloat(float min, float max) {
-    return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) / (max - min));
+    return min + static_cast<float>(rand()) / 
+    (static_cast<float>(RAND_MAX) / (max - min));
 }
 
 // Point structure
@@ -45,17 +51,20 @@ struct Point {
 int main() {
     const int windowWidth = 1200;
     const int windowHeight = 1200;
-    const int trailLength = 200; // Length of the trail ***************************
+    const int trailLength = 200; // Length of the trail ************************
     const float scale = 200.0f; // Scaling factor
 
     // SFML window setup
-    sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}), "Progressive Chaos Visualization");
+    sf::RenderWindow window(
+      sf::VideoMode({windowWidth, windowHeight}),
+      "Chaos Equations"
+    );
     window.setFramerateLimit(60);
 
     // Time-related variables
     sf::Clock clock;
     float t = 0.0f; // Initial time
-    float speed = 0.00005f; // Speed of animation *************************************
+    float speed = 0.00005f; // Speed of animation ******************************
 
     // Random seed
     srand(static_cast<unsigned>(time(0)));
@@ -84,9 +93,19 @@ int main() {
         if (points.size() < 5000 && t > points.size() / 10.0f) {
             for (int i = 0; i < pointsToSpawn; ++i) {
                 Point newPoint;
-                newPoint.position = sf::Vector2f(randomFloat(0, windowWidth), randomFloat(0, windowHeight));
-                newPoint.color = sf::Color(rand() % 256, rand() % 256, rand() % 256);
-                newPoint.velocity = sf::Vector2f(randomFloat(-1, 1), randomFloat(-1, 1));
+                newPoint.position = sf::Vector2f(
+                  randomFloat(0, windowWidth),
+                  randomFloat(0, windowHeight)
+                );
+                newPoint.color = sf::Color(
+                  rand() % 256,
+                  rand() % 256,
+                  rand() % 256
+                );
+                newPoint.velocity = sf::Vector2f(
+                  randomFloat(-1, 1),
+                  randomFloat(-1, 1)
+                );
                 points.push_back(newPoint);
             }
             pointsToSpawn += 1; // Increase spawn rate
@@ -121,7 +140,9 @@ int main() {
             for (const auto& trailPos : point.trail) {
                 sf::CircleShape trailPoint(1.0f);
                 trailPoint.setPosition(trailPos);
-                trailPoint.setFillColor(sf::Color(point.color.r, point.color.g, point.color.b, 50));
+                trailPoint.setFillColor(sf::Color(
+                  point.color.r, point.color.g, point.color.b, 50
+                ));
                 window.draw(trailPoint);
             }
             // Draw main point
