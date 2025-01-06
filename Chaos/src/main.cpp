@@ -24,6 +24,11 @@ this process. As time changes, those points changes as well. We'll also dynamica
 the speed so it speeds up when nothing interesting is happening.
 */ 
 
+/*
+TODO: draw the current equation on screen
+TODO: implement a key press feature to generate the next random eq
+*/
+
 // Generate a random floating-point number in a range
 float randomFloat(float min, float max) {
     return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) / (max - min));
