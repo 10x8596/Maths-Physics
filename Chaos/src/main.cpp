@@ -15,25 +15,7 @@ Link progra m: g++ main.o -o main -LC:\SFML-3.0.0\lib -lsfml-graphics-s
 // execute: ./main.exe
 
 /*
-These are plots of random recursive equations, which often produce chaos,
-and results in beautiful patterns. The equations are dynamic systems so they
-change over time. For every time t, a point (x,y) is initialized to (t,t). It
-starts at a low value and slowly
-increases as the animation progresses. at every time step, we start with a point
-whose coordinates are initialised to t (x=t, y=t). Then we apply an equation to
-update the point such as x' = yt + x - t and y' = x^2 - y^2 - t^2. These
-equations can be random. Once we have the point we draw it to the screen with a
-unique color and repeat. These points will also have a trail. Essentially once
-we have an equation. Let's say x' = yt + x - t and y' = x^2 - y^2 - t^2, we draw
-the first point in green, then apply the same equation again to update the point
-and draw it in blue and we repeat this process. As time changes, those points
-changes as well. We'll also dynamically change the speed so it speeds up
-when nothing interesting is happening.
-*/
-
-/*
 TODO: draw the current equation on screen
-TODO: implement a key press feature to generate the next random eq
 */
 
 // Generate a random floating-point number in a range
@@ -81,22 +63,23 @@ std::pair<float, float> equation2(float x, float y, float t, const EquationParam
 }
 
 int main() {
-    const int windowWidth = 1200;
-    const int windowHeight = 1200;
-    const int trailLength = 15; // Length of the trail ************************ // 200
+    const unsigned windowWidth = 1200;
+    const unsigned windowHeight = 1200;
+    const int trailLength = 2; // Length of the trail ************************ // 200
     const float scale = 200.0f; // Scaling factor // 200.0f
 
     // SFML window setup
     sf::RenderWindow window(
       sf::VideoMode({windowWidth, windowHeight}),
-      "Chaos Equations"
+      "Chaos Equations",
+      sf::Style::Default
     );
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(165);
 
     // Time-related variables
     sf::Clock clock;
     float t = 0.0f; // Initial time
-    float speed = 0.00000000000000005f; // Speed of animation ******************************
+    float speed = 1; // 5.0E-5F; // Speed of animation ******************************
 
     // Random seed
     srand(static_cast<unsigned>(time(0)));
@@ -169,8 +152,21 @@ int main() {
             // use current equation parameters
             auto [newX, newY] = currentEquation(x, y, t, params); // structured bindings
 
+            // Store the point's position from the previous frame
+            sf::Vector2f prevPosition = point.position;
+
             point.position.x = windowWidth / 2 + newX * scale;
             point.position.y = windowHeight / 2 - newY * scale;
+
+            // Interpolation for smoother animation
+            /* A value between 0 and 1 that determines how much to interpolate. 
+            based on deltaTime and speed. Experiment with the multiplier 
+            to adjust the sensitivity of the interpolation. Higher = smoother*/
+            float interpolationFactor = deltaTime.asSeconds() * speed * 100; 
+            interpolationFactor = std::min(1.0f, interpolationFactor); // clamp to 1
+
+            // interpolatedPosition: calculated as a blend between the previous and current positions
+            sf::Vector2f interpolatedPosition = prevPosition + (point.position - prevPosition) * interpolationFactor;
 
             // Update trail
             if (point.trail.size() > trailLength) {
@@ -178,8 +174,17 @@ int main() {
             }
             point.trail.push_back(point.position);
 
-            // Adjust speed based on changes
-            speed = std::max(0.1f, std::fabs(newX - x) + std::fabs(newY - y));
+            // Draw the interpolated position:
+            sf::CircleShape circle(2.0f);
+            circle.setPosition(interpolatedPosition); 
+            circle.setFillColor(point.color);
+            window.draw(circle);
+
+            // calculate moving average of point's speed to smooth out changes in position
+            static float averageSpeed = speed;
+            float currentSpeed = std::max(0.1f, std::fabs(newX - x) + std::fabs(newY - y));
+            averageSpeed = 0.8f * averageSpeed + 0.2f * currentSpeed; // Adjust 0.9 and 0.1 for smoothing
+            speed = averageSpeed;
         }
 
         // Render points
@@ -195,11 +200,6 @@ int main() {
                 trailArray[i].color = sf::Color(point.color.r, point.color.g, point.color.b, static_cast<int>(std::max(0.0f, alpha))); // Ensure alpha is not negative            
             }
             window.draw(trailArray);
-
-            sf::CircleShape circle(2.0f);
-            circle.setPosition(point.position);
-            circle.setFillColor(point.color); // Main points in their color
-            window.draw(circle);
         }
 
         // Display the current equation
