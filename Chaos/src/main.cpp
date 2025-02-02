@@ -31,6 +31,8 @@ struct Point {
     sf::Color color;
     std::vector<sf::Vector3f> trail; // Trail for points
     sf::Vector3f velocity;
+    bool hasTrail;
+    float trailOpacity;
 };
 
 struct EquationParams {
@@ -77,10 +79,16 @@ std::pair<float, float> equation4(float x, float y, float t, const EquationParam
     };
 }
 
+std::pair<float, float> equation5(float x, float y, float t, const EquationParams& p) {
+    return {
+        std::sin(x + t),
+        std::cos(y + t)
+    };
+}
+
 int main() {
     const unsigned windowWidth = 1200;
     const unsigned windowHeight = 1200;
-    const int trailLength = 1.5; // Length of the trail ************************ // 200
     const float scale = 200.0f; // Scaling factor // 200.0f
 
     // SFML window setup
@@ -101,14 +109,16 @@ int main() {
 
     // Points and their initialization
     std::vector<Point> points;
-    int pointsToSpawn = 1; // Initial number of points to spawn
+    int pointsToSpawn = 1000; // Initial number of points to spawn
 
     // Load font
     sf::Font font;
     if (!font.openFromFile("assets/tuffy.ttf")) { return -1; }
 
     // store equation functions in an array
-    std::array<EquationFunction, 4> equations = {equation1, equation2, equation3, equation4};
+    std::array<EquationFunction, 5> equations = {
+        equation1, equation2, equation3, equation4, equation5
+    };
     EquationParams params = generateNewEquationParams();
     EquationFunction currentEquation = equations[0];
     int currentEquationIndex = 0;
@@ -134,7 +144,7 @@ int main() {
             params = generateNewEquationParams();
             t = 0; // reset time for new equation
             points.clear();
-            pointsToSpawn = 1;
+            pointsToSpawn = 1000;
         }
 
         // Gradually spawn more points
@@ -156,13 +166,19 @@ int main() {
                   randomFloat(-1, 1),
                   randomFloat(-1, 1)
                 );
+                newPoint.hasTrail = (rand() % 10 == 0); // 10% chance to have trail
+                newPoint.trailOpacity = 1.0f; // full opacity trail
                 points.push_back(newPoint);
             }
             pointsToSpawn += 1; // Increase spawn rate
         }
 
+        // Render points
+        window.clear(sf::Color::Black);
+
         // Update point positions using dynamic equations
         for (auto& point : points) {
+
             float x = point.position.x / scale - windowWidth / (2 * scale);
             float y = point.position.y / scale - windowHeight / (2 * scale);
             float z = point.position.z / scale;
@@ -173,8 +189,8 @@ int main() {
             // Store the point's position from the previous frame
             sf::Vector3f prevPosition = point.position;
 
-            point.position.x = newX * scale + windowWidth / 8.0f;
-            point.position.y = windowHeight / 8.0f - newY * scale;
+            point.position.x = newX * scale + windowWidth / 2.0f;
+            point.position.y = windowHeight / 2.0f - newY * scale;
             point.position.z = z + (x * y - 8/3 * z) * 0.01f * scale; // Update z (Euler's method)
 
             // Interpolation for smoother animation (3D)
@@ -187,12 +203,6 @@ int main() {
             // interpolatedPosition: calculated as a blend between the previous and current positions
             sf::Vector3f interpolatedPosition = prevPosition + (point.position - prevPosition) * interpolationFactor;
 
-            // Update trail
-            if (point.trail.size() > trailLength) {
-                point.trail.erase(point.trail.begin());
-            }
-            point.trail.push_back(point.position);
-
             // Draw the interpolated position:
             sf::CircleShape circle(2.0f);
             circle.setPosition(sf::Vector2f(interpolatedPosition.x, interpolatedPosition.y)); 
@@ -204,24 +214,6 @@ int main() {
             float currentSpeed = std::max(0.1f, std::fabs(newX - x) + std::fabs(newY - y));
             averageSpeed = 0.8f * averageSpeed + 0.2f * currentSpeed; // Adjust 0.9 and 0.1 for smoothing
             speed = averageSpeed;
-        }
-
-        // Render points
-        window.clear(sf::Color::Black);
-        
-        // rendering trails with vertex arrays for more efficiency
-        for (const auto& point : points) {
-            sf::VertexArray trailArray(sf::PrimitiveType::LineStrip, point.trail.size());
-            for (size_t i = 0; i < point.trail.size(); ++i) {
-                // Project 3D trail points to 2D
-                float trailX = point.trail[i].x / scale * 200 + windowWidth / 2;
-                float trailY = point.trail[i].y / scale * 200 + windowHeight / 2;
-                trailArray[i].position = sf::Vector2f(trailX, trailY);
-                int maxAlpha = 150;
-                float alpha = maxAlpha * std::pow(0.9f, i);
-                trailArray[i].color = sf::Color(point.color.r, point.color.g, point.color.b, static_cast<int>(std::max(0.0f, alpha)));
-            }
-            window.draw(trailArray);
         }
 
         // Display the current equation
@@ -247,6 +239,11 @@ int main() {
                 equationTextStream << "Equation: " 
                                << "x: c[0] * cos(c[1] * y + t) + c[2] * sin(c[3] * x - t)" << "\n" 
                                << "y: c[2] * sin(c[0] * x - t) + c[3] * cos(c[1] * y + t)" << "\n";
+                break;
+            case 5:
+                equationTextStream << "Equation: " 
+                               << "x: sin(x + t)" << "\n" 
+                               << "y: cos(y + t)" << "\n";
                 break;
             default:
                 break;
