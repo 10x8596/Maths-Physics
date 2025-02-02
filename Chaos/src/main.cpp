@@ -6,6 +6,7 @@
 #include <sstream> // For displaying equations
 #include <functional>
 #include <array>
+#include <SFML/Graphics/VertexArray.hpp> // Include for VertexArray
 
 // Compile: g++ -c src/main.cpp -IC:\SFML-3.0.0\include -DSFML_STATIC (make all)
 /*
@@ -26,14 +27,14 @@ float randomFloat(float min, float max) {
 
 // Point structure
 struct Point {
-    sf::Vector2f position;
+    sf::Vector3f position;
     sf::Color color;
-    std::vector<sf::Vector2f> trail; // Trail for points
-    sf::Vector2f velocity;
+    std::vector<sf::Vector3f> trail; // Trail for points
+    sf::Vector3f velocity;
 };
 
 struct EquationParams {
-    std::array<float, 12> coeffs; // up to 12 coefficients
+    std::array<float, 4> coeffs; // up to 4 coefficients
 };
 
 // type alias for function pointers
@@ -50,22 +51,36 @@ auto generateNewEquationParams = []() {
 // Define equation functions
 std::pair<float, float> equation1(float x, float y, float t, const EquationParams& p) {
     return {
-        p.coeffs[0] * std::sin(p.coeffs[1] * y + p.coeffs[2] * t) + p.coeffs[3] * std::cos(p.coeffs[4] * x - p.coeffs[5] * t),
-        p.coeffs[6] * std::cos(p.coeffs[7] * x - p.coeffs[8] * t) + p.coeffs[9] * std::sin(p.coeffs[10] * y + p.coeffs[11] * t)
+        p.coeffs[0] * std::sin(p.coeffs[1] * y + t) + p.coeffs[2] * std::cos(p.coeffs[3] * x - t),
+        p.coeffs[2] * std::sin(p.coeffs[0] * x - t) + p.coeffs[3] * std::cos(p.coeffs[1] * y + t)
     };
 }
 
 std::pair<float, float> equation2(float x, float y, float t, const EquationParams& p) {
     return {
-        1 - p.coeffs[0] * x * x + y,
-        p.coeffs[1] * x
+        p.coeffs[0] * std::cos(p.coeffs[1] * y + t) + p.coeffs[2] * std::sin(p.coeffs[3] * x - t),
+        p.coeffs[2] * std::cos(p.coeffs[0] * x - t) + p.coeffs[3] * std::sin(p.coeffs[1] * y + t)
+    };
+}
+
+std::pair<float, float> equation3(float x, float y, float t, const EquationParams& p) {
+    return {
+        p.coeffs[0] * std::sin(p.coeffs[1] * y + t) + p.coeffs[2] * std::cos(p.coeffs[3] * x - t),
+        p.coeffs[2] * std::cos(p.coeffs[0] * x - t) + p.coeffs[3] * std::sin(p.coeffs[1] * y + t)
+    };
+}
+
+std::pair<float, float> equation4(float x, float y, float t, const EquationParams& p) {
+    return {
+        p.coeffs[0] * std::cos(p.coeffs[1] * y + t) + p.coeffs[2] * std::sin(p.coeffs[3] * x - t),
+        p.coeffs[2] * std::sin(p.coeffs[0] * x - t) + p.coeffs[3] * std::cos(p.coeffs[1] * y + t)
     };
 }
 
 int main() {
     const unsigned windowWidth = 1200;
     const unsigned windowHeight = 1200;
-    const int trailLength = 2; // Length of the trail ************************ // 200
+    const int trailLength = 1.5; // Length of the trail ************************ // 200
     const float scale = 200.0f; // Scaling factor // 200.0f
 
     // SFML window setup
@@ -79,7 +94,7 @@ int main() {
     // Time-related variables
     sf::Clock clock;
     float t = 0.0f; // Initial time
-    float speed = 1; // 5.0E-5F; // Speed of animation ******************************
+    float speed = 5.0E-5F; // Speed of animation ******************************
 
     // Random seed
     srand(static_cast<unsigned>(time(0)));
@@ -93,7 +108,7 @@ int main() {
     if (!font.openFromFile("assets/tuffy.ttf")) { return -1; }
 
     // store equation functions in an array
-    std::array<EquationFunction, 2> equations = {equation1, equation2};
+    std::array<EquationFunction, 4> equations = {equation1, equation2, equation3, equation4};
     EquationParams params = generateNewEquationParams();
     EquationFunction currentEquation = equations[0];
     int currentEquationIndex = 0;
@@ -104,7 +119,7 @@ int main() {
     // Main loop
     while (window.isOpen()) {
         sf::Time deltaTime = clock.restart();
-        t += deltaTime.asSeconds() * speed;
+        t += deltaTime.asSeconds() * speed; // *******************************************
 
         // Handle events
         while (const std::optional event = window.pollEvent()) {
@@ -123,19 +138,21 @@ int main() {
         }
 
         // Gradually spawn more points
-        if (points.size() < 1000 && t > points.size() / 10.0f) {
+        if (points.size() < 1200 && t > points.size() / 10.0f) {
             for (int i = 0; i < pointsToSpawn; ++i) {
                 Point newPoint;
-                newPoint.position = sf::Vector2f(
+                newPoint.position = sf::Vector3f(
                   randomFloat(0, windowWidth),
-                  randomFloat(0, windowHeight)
+                  randomFloat(0, windowHeight),
+                  randomFloat(-50, 50)       // Initialize z (experiment with the range)
                 );
                 newPoint.color = sf::Color(
                   rand() % 256,
                   rand() % 256,
                   rand() % 256
                 );
-                newPoint.velocity = sf::Vector2f(
+                newPoint.velocity = sf::Vector3f(
+                  randomFloat(-1, 1),
                   randomFloat(-1, 1),
                   randomFloat(-1, 1)
                 );
@@ -148,17 +165,19 @@ int main() {
         for (auto& point : points) {
             float x = point.position.x / scale - windowWidth / (2 * scale);
             float y = point.position.y / scale - windowHeight / (2 * scale);
+            float z = point.position.z / scale;
 
             // use current equation parameters
             auto [newX, newY] = currentEquation(x, y, t, params); // structured bindings
 
             // Store the point's position from the previous frame
-            sf::Vector2f prevPosition = point.position;
+            sf::Vector3f prevPosition = point.position;
 
-            point.position.x = windowWidth / 2 + newX * scale;
-            point.position.y = windowHeight / 2 - newY * scale;
+            point.position.x = newX * scale + windowWidth / 8.0f;
+            point.position.y = windowHeight / 8.0f - newY * scale;
+            point.position.z = z + (x * y - 8/3 * z) * 0.01f * scale; // Update z (Euler's method)
 
-            // Interpolation for smoother animation
+            // Interpolation for smoother animation (3D)
             /* A value between 0 and 1 that determines how much to interpolate. 
             based on deltaTime and speed. Experiment with the multiplier 
             to adjust the sensitivity of the interpolation. Higher = smoother*/
@@ -166,7 +185,7 @@ int main() {
             interpolationFactor = std::min(1.0f, interpolationFactor); // clamp to 1
 
             // interpolatedPosition: calculated as a blend between the previous and current positions
-            sf::Vector2f interpolatedPosition = prevPosition + (point.position - prevPosition) * interpolationFactor;
+            sf::Vector3f interpolatedPosition = prevPosition + (point.position - prevPosition) * interpolationFactor;
 
             // Update trail
             if (point.trail.size() > trailLength) {
@@ -176,7 +195,7 @@ int main() {
 
             // Draw the interpolated position:
             sf::CircleShape circle(2.0f);
-            circle.setPosition(interpolatedPosition); 
+            circle.setPosition(sf::Vector2f(interpolatedPosition.x, interpolatedPosition.y)); 
             circle.setFillColor(point.color);
             window.draw(circle);
 
@@ -194,17 +213,45 @@ int main() {
         for (const auto& point : points) {
             sf::VertexArray trailArray(sf::PrimitiveType::LineStrip, point.trail.size());
             for (size_t i = 0; i < point.trail.size(); ++i) {
-                trailArray[i].position = point.trail[i];
+                // Project 3D trail points to 2D
+                float trailX = point.trail[i].x / scale * 200 + windowWidth / 2;
+                float trailY = point.trail[i].y / scale * 200 + windowHeight / 2;
+                trailArray[i].position = sf::Vector2f(trailX, trailY);
                 int maxAlpha = 150;
                 float alpha = maxAlpha * std::pow(0.9f, i);
-                trailArray[i].color = sf::Color(point.color.r, point.color.g, point.color.b, static_cast<int>(std::max(0.0f, alpha))); // Ensure alpha is not negative            
+                trailArray[i].color = sf::Color(point.color.r, point.color.g, point.color.b, static_cast<int>(std::max(0.0f, alpha)));
             }
             window.draw(trailArray);
         }
 
         // Display the current equation
-        std::stringstream equationTextStream;
-        equationTextStream << "Equation: " << currentEquationIndex + 1 << "\n"; // Display the current equation index
+        std::stringstream equationTextStream; int idx = currentEquationIndex + 1;
+        // use switch case to cycle through different equations
+        switch(idx) {
+            case 1:
+                equationTextStream << "Equation: " 
+                               << "x: c[0] * sin(c[1] * y + t) + c[2] * cos(c[3] * x - t)" << "\n" 
+                               << "y: c[2] * sin(c[0] * x - t) + c[3] * cos(c[1] * y + t)" << "\n";
+                break;
+            case 2:
+                equationTextStream << "Equation: " 
+                               << "x: c[0] * cos(c[1] * y + t) + c[2] * sin(c[3] * x - t)" << "\n" 
+                               << "y: c[2] * cos(c[0] * x - t) + c[3] * sin(c[1] * y + t)" << "\n";
+                break;
+            case 3:
+                equationTextStream << "Equation: " 
+                               << "x: c[0] * sin(c[1] * y + t) + c[2] * cos(c[3] * x - t)" << "\n" 
+                               << "y: c[2] * cos(c[0] * x - t) + c[3] * sin(c[1] * y + t)" << "\n";
+                break;
+            case 4:
+                equationTextStream << "Equation: " 
+                               << "x: c[0] * cos(c[1] * y + t) + c[2] * sin(c[3] * x - t)" << "\n" 
+                               << "y: c[2] * sin(c[0] * x - t) + c[3] * cos(c[1] * y + t)" << "\n";
+                break;
+            default:
+                break;
+        }
+
         for (size_t i = 0; i < params.coeffs.size(); ++i) {
             equationTextStream << "c[" << i << "] = " << params.coeffs[i] << "\n";
         }
