@@ -86,8 +86,8 @@ std::pair<float, float> equation5(float x, float y, float t, const EquationParam
 }
 
 int main() {
-    constexpr unsigned windowWidth = 2800;
-    constexpr unsigned windowHeight = 1400;
+    constexpr unsigned windowWidth = 1280;
+    constexpr unsigned windowHeight = 720;
     constexpr float scale = 200.0f; // Scaling factor // 200.0f
 
     // SFML window setup
